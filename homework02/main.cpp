@@ -51,6 +51,7 @@ typedef struct{                   // 请补全结构定义: 定义学号名字�
 
 studData stu;
 
+
 QDebug operator<< (QDebug d, const studData &data) { // 运算符重载函数，直接输出studData结构
     QDebugStateSaver saver(d);
     d.nospace()<<data.Number<<"\t"<<data.Name<<"\t"<<data.Score;
@@ -85,7 +86,7 @@ class ScoreSorter
 public:
     ScoreSorter(QString dataFile);
     readFile(QString datafile);   //读取文件
-    doSort(QString dataffile);     //进行比较
+    doSort();     //进行比较
 };
 
 // 请补全
@@ -102,9 +103,8 @@ ScoreSorter::readFile(QString datafile){   //定义函数readfile，读取文件
    QTextStream read(&file);
    read.setCodec("UTF-8");
    qDebug().noquote().nospace()<<"开始读取文件："<< datafile;
-
-   QVector<studData> vec;
-
+   QString title = read.readLine();
+   QStringList t = title.split(' ',QString::SkipEmptyParts);
    while(!read.atEnd()){
         QString line = read.readLine();
         qDebug()<<line;
@@ -112,19 +112,30 @@ ScoreSorter::readFile(QString datafile){   //定义函数readfile，读取文件
         QStringList data=line.split(' ',QString::SkipEmptyParts);//去掉空项
         stu.Name = data.at(0);
         stu.Number = data.at(1);
-        for(int i=2;i<data.size();i++)
-        {stu.Score = data.at(i); }
+        for(int i=2;i<t.size();i++)
+        {stu.Score.push_back(data.at(i));}
+
 
    }
     file.close();
     qDebug().noquote().nospace()<<"文件读取结束:"<<datafile;
 }
 
-ScoreSorter::doSort(QString dataffile){
-    for(int i=0;i<dataffile.size();i++)
+ScoreSorter::doSort(){
+    for(int i=0;i<32;i++)
     {
         myCmp cmp(i);
-        std::sort(dataffile.begin(),dataffile.end(), cmp );
+        switch (i) {
+        case 0:
+            std::sort(stu.Name.begin(),stu.Name.end(), cmp );
+            break;
+        case 1:
+             std::sort(stu.Number.begin(),stu.Number.end(), cmp );break;
+        default:
+            std::sort(stu.Score.begin(),stu.Score.end(), cmp );
+
+        }
+
         qDebug()<<"当前输出第"<<i+1<<"行，排序后输出如下:"<<stu;
     }
 
@@ -133,7 +144,7 @@ ScoreSorter::doSort(QString dataffile){
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg) //输出信息至文件sorted_data.txt
 {
     QFile file("D:/Dev/qt_homework/homework02/homework02/sorted_data.txt");
-    file.open(QIODevice::WriteOnly | QIODevice::Append);
+    file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
     QTextStream out(&file);
     out << msg  <<endl;
     file.flush();
@@ -141,6 +152,8 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
     QTextStream ts(stdout);
     ts << msg <<endl;
+    file.flush();
+    file.close();
 
 }
 
@@ -158,7 +171,7 @@ int main()
 
     ScoreSorter s(datafile);
     s.readFile(datafile);   //读取文件
-    s.doSort(datafile);   //进行比较
+    s.doSort();   //进行比较,输出
 
     return 0;
     }
