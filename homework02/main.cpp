@@ -44,17 +44,15 @@ enum SortKind{  //命名枚举值,枚举类型引用命名枚举值。
 }
 
 typedef struct{                   // 请补全结构定义: 定义学号名字，成绩列表
-    QString Number;
-    QString Name;
-    QVector<QString> Score;
+    QStringList stud;
 }studData;
 
 studData stu;
 
-
 QDebug operator<< (QDebug d, const studData &data) { // 运算符重载函数，直接输出studData结构
     QDebugStateSaver saver(d);
-    d.nospace()<<data.Number<<"\t"<<data.Name<<"\t"<<data.Score;
+    for(int i=0;i<data.stud.size();i++)
+   { d.nospace()<<data.stud.at(i)<<"\t";}
     return d;
 }
 
@@ -69,14 +67,11 @@ private:
 
 bool myCmp::operator()(const studData &d1, const studData &d2)
 {
-    bool result = false;
-    quint32 sortedColumn = 0x00000001<<currentColumn;
-    switch (sortedColumn) {
-    case SK::col01 : result=( d1.Number> d2.Number) ;break;
-    case SK::col02 : result=( d1.Name > d2.Name) ;break;
-    default :
-    result=( d1.Score > d2.Score);
-    }
+   bool result = false;
+   quint32 sortedColumn = 0x00000001<<currentColumn;
+   switch (sortedColumn) {
+   default : result = d1.stud.at(currentColumn+1) >  d2.stud.at(currentColumn+1);break;
+   }
     return result;
 
 }
@@ -87,6 +82,12 @@ public:
     ScoreSorter(QString dataFile);
     readFile(QString datafile);   //读取文件
     doSort();     //进行比较
+ private:
+    QStringList data;
+  //  QString firstline;
+    QList<studData>  student;
+    QList<QString> quantity;
+
 };
 
 // 请补全
@@ -103,43 +104,32 @@ ScoreSorter::readFile(QString datafile){   //定义函数readfile，读取文件
    QTextStream read(&file);
    read.setCodec("UTF-8");
    qDebug().noquote().nospace()<<"开始读取文件："<< datafile;
-   QString title = read.readLine();
-   QStringList t = title.split(' ',QString::SkipEmptyParts);
+ //  QString firstline = read.readLine();
+ //  qDebug()<<firstline;
+
    while(!read.atEnd()){
         QString line = read.readLine();
         qDebug()<<line;
-
-        QStringList data=line.split(' ',QString::SkipEmptyParts);//去掉空项
-        stu.Name = data.at(0);
-        stu.Number = data.at(1);
-        for(int i=2;i<t.size();i++)
-        {stu.Score.push_back(data.at(i));}
-
-
+        stu.stud = line.split(' ',QString::SkipEmptyParts);//去掉空
    }
     file.close();
     qDebug().noquote().nospace()<<"文件读取结束:"<<datafile;
 }
 
 ScoreSorter::doSort(){
-    for(int i=0;i<32;i++)
+    for(int i=0;i<stu.stud.size();i++)
     {
         myCmp cmp(i);
-        switch (i) {
-        case 0:
-            std::sort(stu.Name.begin(),stu.Name.end(), cmp );
-            break;
-        case 1:
-             std::sort(stu.Number.begin(),stu.Number.end(), cmp );break;
-        default:
-            std::sort(stu.Score.begin(),stu.Score.end(), cmp );
-
+        std::sort(stu.stud.begin(),stu.stud.end(), cmp );
+        qDebug()<<"当前输出按第"<<i+1<<"列，排序后输出如下:"<<stu;
+        quantity.removeLast();                              //删除最后一个"\n"
+            qDebug().nospace().noquote()<<quantity;
+            for(int i=0;i<student.size();i++)
+            {
+                qDebug()<<student.at(i);
+            }
         }
-
-        qDebug()<<"当前输出第"<<i+1<<"行，排序后输出如下:"<<stu;
     }
-
-}
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg) //输出信息至文件sorted_data.txt
 {
