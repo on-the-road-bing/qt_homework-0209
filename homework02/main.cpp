@@ -47,12 +47,9 @@ typedef struct{                   // 请补全结构定义: 定义学号名字�
     QStringList stud;
 }studData;
 
-studData stu;
-
 QDebug operator<< (QDebug d, const studData &data) { // 运算符重载函数，直接输出studData结构
-    QDebugStateSaver saver(d);
     for(int i=0;i<data.stud.size();i++)
-   { d.nospace()<<data.stud.at(i)<<"\t";}
+   { d.nospace().noquote()<<(QString (data.stud.at(i)))<<"\t";}
     return d;
 }
 
@@ -70,66 +67,69 @@ bool myCmp::operator()(const studData &d1, const studData &d2)
    bool result = false;
    quint32 sortedColumn = 0x00000001<<currentColumn;
    switch (sortedColumn) {
-   default : result = d1.stud.at(currentColumn+1) >  d2.stud.at(currentColumn+1);break;
+   default : result = d1.stud.at(currentColumn+1)>d2.stud.at(currentColumn+1);
+;
    }
     return result;
-
 }
 
 class ScoreSorter
 {
 public:
     ScoreSorter(QString dataFile);
-    readFile(QString datafile);   //读取文件
+    readFile();   //读取文件
     doSort();     //进行比较
  private:
-    QStringList data;
-  //  QString firstline;
-    QList<studData>  student;
-    QList<QString> quantity;
-
+    QString datafilename;
+    QList<studData> data;//存储每行数据
+    studData    title;//储存表头
 };
 
 // 请补全
 ScoreSorter::ScoreSorter(QString dataFile){
-    QString datafilename = dataFile;
+    datafilename = dataFile;
 } //构造函数，初始化文件名
 
-ScoreSorter::readFile(QString datafile){   //定义函数readfile，读取文件
-    QFile file(datafile);
-    if(!file.open(QFile::ReadOnly | QIODevice::Text)) {
+ScoreSorter::readFile(){   //定义函数readfile，读取文件
+    QFile file(datafilename);
+    if(!file.open(QFile::ReadOnly | QIODevice::Text))
+   {
         qDebug()<<"文件打开失败！"<<endl;
-        return -1;
    }
-   QTextStream read(&file);
-   read.setCodec("UTF-8");
-   qDebug().noquote().nospace()<<"开始读取文件："<< datafile;
- //  QString firstline = read.readLine();
- //  qDebug()<<firstline;
 
-   while(!read.atEnd()){
-        QString line = read.readLine();
-        qDebug()<<line;
-        stu.stud = line.split(' ',QString::SkipEmptyParts);//去掉空
+   qDebug().noquote().nospace()<<"开始读取文件："<< datafilename;
+   QString tl ( file.readLine());
+   title.stud = tl.split(' ',QString::SkipEmptyParts);//去掉空
+   if((title.stud).last() == "\n")
+           title.stud.removeLast();
+   studData stu;
+   while(!file.atEnd())
+   {
+        QByteArray line = file.readLine();
+        QString str(line);
+        stu.stud = str.split(' ',QString::SkipEmptyParts);//去掉空
+        if((stu.stud).last() == "\n") //去掉回车
+           { stu.stud.removeLast(); }
+        if(stu.stud.size()==0) continue;
+        data.append(stu);
    }
     file.close();
-    qDebug().noquote().nospace()<<"文件读取结束:"<<datafile;
+
+    qDebug().noquote().nospace()<<"文件读取结束:"<<datafilename;
 }
 
-ScoreSorter::doSort(){
-    for(int i=0;i<stu.stud.size();i++)
+ScoreSorter::doSort()
+{
+    for(int i=1;i<title.stud.size();i++)
     {
-        myCmp cmp(i);
-        std::sort(stu.stud.begin(),stu.stud.end(), cmp );
-        qDebug()<<"当前输出按第"<<i+1<<"列，排序后输出如下:"<<stu;
-        quantity.removeLast();                              //删除最后一个"\n"
-            qDebug().nospace().noquote()<<quantity;
-            for(int i=0;i<student.size();i++)
-            {
-                qDebug()<<student.at(i);
-            }
-        }
+        myCmp cmp(i-1);
+        std::sort(data.begin(),data.end(), cmp );
+        qDebug()<<"----------------------";
+        qDebug()<<"当前输出按第"<<i+1<<"列，排序后输出如下:";
+        qDebug() << '\t'<< (this->title);    //qDebug重载输出
+               for(int i=0;i<this->data.size();i++)  qDebug() << (this->data.at(i));
     }
+}
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg) //输出信息至文件sorted_data.txt
 {
@@ -155,12 +155,12 @@ int main()
     // 如果排序后文件已存在，则删除之   /删除了文件内容
     QFile f("sorted_data.txt");
     if (f.exists("D:/Dev/qt_homework/homework02/homework02/sorted_data.txt"))
-    {//存在文件名（）指定的文件，返回true
+   {//存在文件名（）指定的文件，返回true
     f.remove("D:/Dev/qt_homework/homework02/homework02/sorted_data.txt");
     }//重载函数,删除指定的文件名指定的文件
 
     ScoreSorter s(datafile);
-    s.readFile(datafile);   //读取文件
+    s.readFile();   //读取文件
     s.doSort();   //进行比较,输出
 
     return 0;
