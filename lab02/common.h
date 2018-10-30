@@ -1,4 +1,3 @@
-
  #ifndef COMMON_H
  #define COMMON_H
 
@@ -11,7 +10,8 @@
      Triangle     = 0x01<<3,
      Diamond      = 0x01<<4,
      Text         = 0x01<<5,
-     TypeMask     = 0x0f
+     picture      = 0x01<<6,
+     TypeMask     = 0x0f,
  };
  }
 

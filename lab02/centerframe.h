@@ -27,7 +27,6 @@
 
      void updateButtonStatus();
 
-
  public slots:
      void setPenStyle(int penStyle);
      void setPenWidth(int width=1);
@@ -42,7 +41,7 @@
      void on_btnTriangleClicked();
      void on_btnTextClicked();
      void on_edtTextEdited(const QString &text);
-
+     void on_btnchoseimageClicked();
 
  private:
      QVBoxLayout* vLayout;
@@ -55,7 +54,7 @@
      QPushButton* btnTriangle;
      QPushButton* btnText;
      QLineEdit* edtText;
-
+     QPushButton *ImgBtn;
 
  };
 

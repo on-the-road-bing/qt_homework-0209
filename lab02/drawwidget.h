@@ -6,7 +6,7 @@
 #include <QPoint>
 #include <QPainter>
 #include <QPalette>
-
+#include <QFileDialog>
 
   class DrawWidget : public QWidget
   {
@@ -30,14 +30,15 @@
       void drawShape(const QPointF ptStart,const QPointF ptEnd,const ST::ShapeType drawType);
       QRectF textRect(const QPointF ptStart, const QPointF ptEnd, QString displayText, QFontMetrics fm);
 
+
+
    signals:
    public slots:
        void setStyle(int);
        void setWidth(int);
        void setColor(QColor);
        void clear();
-
-
+       void choseimage();
 
    private :
        QPixmap *pix;
@@ -49,6 +50,7 @@
        QColor color;
        ST::ShapeType drawType;
        QString drawnText;
+
    };
    #endif // DRAWWIDGET_H
 

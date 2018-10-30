@@ -1,14 +1,15 @@
 #include "centerframe.h"
- #include "drawwidget.h"
- #include <QVBoxLayout>
- #include <QHBoxLayout>
- #include <QGroupBox>
- #include <QPushButton>
- #include <QPainter>
- #include <QPixmap>
- #include <QGridLayout>
- #include <QLineEdit>
- #include <QDebug>
+#include "drawwidget.h"
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGroupBox>
+#include <QPushButton>
+#include <QPainter>
+#include <QPixmap>
+#include <QGridLayout>
+#include <QLineEdit>
+#include <QDebug>
+#include <QFileDialog>
 
  CenterFrame::CenterFrame(QWidget *parent) : QFrame(parent)
  {
@@ -50,7 +51,7 @@
      connect(btnRect,&QPushButton::clicked,
              this,&CenterFrame::on_btnRectClicked);
 
-     p.fill(BACKGROUND_COLOR);
+     p.fill(FOREGROUND_COLOR);
      painter.drawRect(3,3,p.size().width()-2*3,p.size().height()-2*3);
      btnRect->setIcon (QIcon(p));
 
@@ -116,6 +117,20 @@
      connect(btnText,&QPushButton::clicked,
              this,&CenterFrame::on_btnTextClicked);
 
+     //加入图片选择按钮
+     ImgBtn = new QPushButton();
+     ImgBtn->setToolTip("绘图片");
+     ImgBtn->setCheckable(true);
+     ImgBtn->setIconSize(p.size());
+
+     p.fill (BACKGROUND_COLOR);
+     QImage Image(":/user");
+     QRect targetRect(0,0,p.size().width(),p.size().height());
+     QRect sourceRect = Image.rect();
+     painter.drawImage(targetRect,Image,sourceRect);
+     ImgBtn->setIcon(QIcon(p));
+     connect (ImgBtn, &QPushButton::clicked,                                this,&CenterFrame::on_btnchoseimageClicked);
+
      // 选项Group布局
      QGridLayout *gridLayout = new QGridLayout();
      gridLayout->addWidget(btnRect,0,0);
@@ -123,6 +138,7 @@
      gridLayout->addWidget(btnTriangle,1,0);
      gridLayout->addWidget(btnLine,1,1);
      gridLayout->addWidget(btnText,2,0);
+     gridLayout->addWidget(ImgBtn,2,1);
      gridLayout->setMargin(3);
      gridLayout->setSpacing(3);
      group->setLayout(gridLayout);
@@ -197,6 +213,7 @@
      btnEllipse->setChecked(false);
      btnText->setChecked(false);
      edtText->setVisible(false);
+     ImgBtn->setChecked(false);
 
      // 然后根据设置的绘图类型重新切换按键状态
      switch (drawWidget->shapeType()) {
@@ -216,6 +233,9 @@
          btnText->setChecked(true);
          edtText->setVisible(true);      // 使编辑框可见
          edtText->setFocus();            // 编辑框获得输入焦点
+         break;
+     case ST::picture:
+         ImgBtn->setChecked(true);
          break;
      default:
          break;
@@ -299,4 +319,17 @@
  void CenterFrame::on_edtTextEdited(const QString &text)
  {
      drawWidget->setDrawnText(text);
+ }
+ void CenterFrame::on_btnchoseimageClicked()
+ {
+      if(ImgBtn ->isChecked())
+          {
+              drawWidget->setShapeType(ST::picture);
+              drawWidget->choseimage();
+              updateButtonStatus();
+          }
+          else
+          {
+              drawWidget->setShapeType(ST::None);
+          }
  }

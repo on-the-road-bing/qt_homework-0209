@@ -11,7 +11,9 @@
 #include <QPainter>
 #include <QFileDialog>
 #include <QMessageBox>
-
+#include <QPixmap>
+#include <QPoint>
+#include<QVector>
  MainWindow::MainWindow(QWidget *parent)
      : QMainWindow(parent)
  {
@@ -49,46 +51,31 @@
      styleComboBox->addItem (tr("连点划线(DashDotDotLine)"), static_cast<int>(Qt::DashDotDotLine));
         connect (styleComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
                  this, &MainWindow::penStyleChangged);
-        styleComboBox->setCurrentIndex(1);
+     styleComboBox->setCurrentIndex(1);
 
 
-        // 线宽选择框
-        widthLabel = new QLabel(tr("线宽"));
-        widthSpinBox = new QSpinBox;
-        widthSpinBox->setToolTip(tr("选择画笔线宽"));
-        widthSpinBox->setRange(1,50);        //线宽范围
-        connect (widthSpinBox, static_cast<void(QSpinBox::*)(int )>(&QSpinBox::valueChanged),
-                 centerFrame, &CenterFrame::setPenWidth);
-        widthSpinBox->setValue(1);
+     // 线宽选择框
+     widthLabel = new QLabel(tr("线宽"));
+     widthSpinBox = new QSpinBox;
+     widthSpinBox->setToolTip(tr("选择画笔线宽"));
+     widthSpinBox->setRange(1,50);        //线宽范围
+        connect (widthSpinBox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+              centerFrame, &CenterFrame::setPenWidth);
+     widthSpinBox->setValue(1);
 
-        // 颜色选择框
-        colorBtn = new QToolButton;
-        QPixmap pixmap(20, 20);
-        pixmap.fill (FOREGROUND_COLOR);
-        colorBtn->setIcon (QIcon(pixmap));
-        colorBtn->setToolTip(tr("选择画笔颜色"));
-        connect (colorBtn, &QToolButton::clicked, this, &MainWindow::penColorChangged);
+     // 颜色选择框
+     colorBtn = new QToolButton;
+     QPixmap pixmap(20, 20);
+     pixmap.fill (FOREGROUND_COLOR);
+     colorBtn->setIcon (QIcon(pixmap));
+     colorBtn->setToolTip(tr("选择画笔颜色"));
+     connect (colorBtn, &QToolButton::clicked, this, &MainWindow::penColorChangged);
 
-        // 创建清除工具栏
-        clearBtn = new QToolButton;
-        clearBtn->setText (tr("清除"));
-        clearBtn->setToolTip(tr("清除当前画板"));
-        connect (clearBtn, &QToolButton::clicked, centerFrame, &CenterFrame::clearPaint);
-
-     //加入图片选择按钮
-     ImgBtn = new QToolButton();
-     pixmap.fill (BACKGROUND_COLOR);
-     QPainter painter (&pixmap);
-     QImage Image(":/user");
-     QRect targetRect(0,0,20,20);
-     QRect sourceRect = Image.rect();
-     painter.drawImage(targetRect,Image,sourceRect);
-     ImgBtn->setIcon(QIcon(pixmap));
-     ImgBtn->setToolTip(tr("选择图片"));
-     connect (ImgBtn, &QToolButton::clicked, this, &MainWindow::choseimage);
-
-
-
+     // 创建清除工具栏
+     clearBtn = new QToolButton;
+     clearBtn->setText (tr("清除"));
+     clearBtn->setToolTip(tr("清除当前画板"));
+     connect (clearBtn, &QToolButton::clicked, centerFrame, &CenterFrame::clearPaint);
 
      // 向工具栏上添加各个控件
      toolBar->addWidget (styleLabel);
@@ -98,7 +85,7 @@
      toolBar->addWidget (colorBtn);
      toolBar->addSeparator();
      toolBar->addWidget (clearBtn);
-     toolBar->addWidget (ImgBtn);
+
  }
 
  void MainWindow::penStyleChangged (int index)
@@ -123,20 +110,4 @@
      }
  }
 
-void MainWindow::choseimage()
-{
-    QString filename =QFileDialog::getOpenFileName( this,tr("选择图片文件"));
-    if(filename.isEmpty())
-            return;
-    else
-    {
-        QImage img;
-        if(!(img.load(filename))) //加载图像
-        {
-            QMessageBox::information(this, tr("打开图像失败"),tr("打开图像失败!"));
-            return;
-        }
 
-    }
-
-}

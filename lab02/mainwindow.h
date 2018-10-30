@@ -18,12 +18,12 @@
       ~MainWindow();
 
       void createToolBar();
+
   public slots:
       void penStyleChangged(int index=0);
 
       void penColorChangged();
 
-      void choseimage();
 
   private:
       CenterFrame *centerFrame;
@@ -33,6 +33,6 @@
       QSpinBox *widthSpinBox;
       QToolButton *colorBtn;
       QToolButton *clearBtn;
-      QToolButton *ImgBtn;
+
   };
   #endif // MAINWINDOW_H
