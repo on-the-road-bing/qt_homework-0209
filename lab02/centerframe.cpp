@@ -51,7 +51,7 @@
      connect(btnRect,&QPushButton::clicked,
              this,&CenterFrame::on_btnRectClicked);
 
-     p.fill(FOREGROUND_COLOR);
+     p.fill("black");
      painter.drawRect(3,3,p.size().width()-2*3,p.size().height()-2*3);
      btnRect->setIcon (QIcon(p));
 
@@ -61,7 +61,7 @@
      btnEllipse->setCheckable(true);
      btnEllipse->setIconSize(p.size());
 
-     p.fill(BACKGROUND_COLOR);
+     p.fill("black");
      painter.drawEllipse(3,3,p.size().width()-2*3,p.size().height()-2*3);
      btnEllipse->setIcon (QIcon(p));
      connect(btnEllipse,&QPushButton::clicked,
@@ -73,7 +73,7 @@
      btnLine->setCheckable(true);
      btnLine->setIconSize(p.size());
 
-     p.fill(BACKGROUND_COLOR);
+     p.fill("black");
      painter.drawLine(3+3,p.size().height()-2*3,p.size().width()-2*3,3+3);
      btnLine->setIcon (QIcon(p));
      connect(btnLine,&QPushButton::clicked,
@@ -85,7 +85,7 @@
      btnTriangle->setCheckable(true);
      btnTriangle->setIconSize(p.size());
 
-     p.fill(BACKGROUND_COLOR);
+     p.fill("black");
      // 三角形的三个顶点
      QPointF pt1(3,p.size().height()-3);
      QPointF pt2(p.size().width()/2,3);
@@ -106,7 +106,7 @@
      btnText->setCheckable(true);
      btnText->setIconSize(p.size());
 
-     p.fill(BACKGROUND_COLOR);
+     p.fill("black");
      QFont font = painter.font();
      font.setFamily("Modern No. 20");
      font.setPixelSize(26);
@@ -124,12 +124,34 @@
      ImgBtn->setIconSize(p.size());
 
      p.fill (BACKGROUND_COLOR);
-     QImage Image(":/user");
-     QRect targetRect(0,0,p.size().width(),p.size().height());
-     QRect sourceRect = Image.rect();
-     painter.drawImage(targetRect,Image,sourceRect);
+     QImage Imagei(":/i");
+     QRect targetRecti(0,0,p.size().width(),p.size().height());
+     QRect sourceRecti = Imagei.rect();
+     painter.drawImage(targetRecti,Imagei,sourceRecti);
      ImgBtn->setIcon(QIcon(p));
      connect (ImgBtn, &QPushButton::clicked,                                this,&CenterFrame::on_btnchoseimageClicked);
+
+     //菱形按钮
+     btndiamond = new QPushButton(group);
+     btndiamond ->setToolTip("绘制菱形");
+     btndiamond->setCheckable(true);
+     btndiamond->setIconSize(p.size());
+
+     p.fill("black");
+     //菱形形的四个顶点
+     QPointF pt4(-3+p.size().width(),p.size().height()/2);
+     QPointF pt5(p.size().width()/2,3);
+     QPointF pt6(3,p.size().height()/2);
+     QPointF pt7(p.size().width()/2,p.size().height()-3);
+     QVector<QPointF> ptd;
+     ptd<<pt4<<pt5<<pt5<<pt6<<pt6<<pt7<<pt7<<pt4;
+     QImage Imaged(":/d");
+     QRect targetRectd(0,0,p.size().width(),p.size().height());
+     QRect sourceRectd = Imaged.rect();
+     painter.drawImage(targetRectd,Imaged,sourceRectd);
+     btndiamond->setIcon (QIcon(p));
+     connect(btndiamond,&QPushButton::clicked,
+             this,&CenterFrame::on_btnDiamondClicked);
 
      // 选项Group布局
      QGridLayout *gridLayout = new QGridLayout();
@@ -139,11 +161,11 @@
      gridLayout->addWidget(btnLine,1,1);
      gridLayout->addWidget(btnText,2,0);
      gridLayout->addWidget(ImgBtn,2,1);
+     gridLayout->addWidget(btndiamond,3,0);
      gridLayout->setMargin(3);
      gridLayout->setSpacing(3);
      group->setLayout(gridLayout);
  }
-
 
  void CenterFrame::createUI()
  {
@@ -214,6 +236,7 @@
      btnText->setChecked(false);
      edtText->setVisible(false);
      ImgBtn->setChecked(false);
+     btndiamond->setChecked(false);
 
      // 然后根据设置的绘图类型重新切换按键状态
      switch (drawWidget->shapeType()) {
@@ -236,6 +259,9 @@
          break;
      case ST::picture:
          ImgBtn->setChecked(true);
+         break;
+     case ST::Diamond:
+         btndiamond->setChecked(true);
          break;
      default:
          break;
@@ -332,4 +358,12 @@
           {
               drawWidget->setShapeType(ST::None);
           }
+ }
+ void CenterFrame::on_btnDiamondClicked(){
+     if(btndiamond->isChecked()){
+         drawWidget->setShapeType(ST::Diamond);
+         updateButtonStatus();
+     }else{
+         drawWidget->setShapeType(ST::None);
+     }
  }

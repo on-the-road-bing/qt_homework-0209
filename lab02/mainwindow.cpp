@@ -12,8 +12,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPixmap>
-#include <QPoint>
-#include<QVector>
+
  MainWindow::MainWindow(QWidget *parent)
      : QMainWindow(parent)
  {

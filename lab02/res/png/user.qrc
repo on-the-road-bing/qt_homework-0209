@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file alias="user">QQ截图20181024195732.jpg</file>
+        <file alias="i">QQ截图20181024195732.jpg</file>
+        <file alias="d">d.jpg</file>
     </qresource>
 </RCC>

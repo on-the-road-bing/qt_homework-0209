@@ -42,6 +42,7 @@
      void on_btnTextClicked();
      void on_edtTextEdited(const QString &text);
      void on_btnchoseimageClicked();
+     void on_btnDiamondClicked();
 
  private:
      QVBoxLayout* vLayout;
@@ -55,6 +56,7 @@
      QPushButton* btnText;
      QLineEdit* edtText;
      QPushButton *ImgBtn;
+     QPushButton *btndiamond;
 
  };
 
