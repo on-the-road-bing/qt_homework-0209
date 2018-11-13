@@ -15,9 +15,11 @@
       explicit DrawWidget(QWidget *parent = 0);
       ~DrawWidget();
 
+
       void setShapeType(ST::ShapeType type);
       ST::ShapeType shapeType();
       void setDrawnText(QString text);
+
 
 
   protected:
@@ -31,26 +33,29 @@
       QRectF textRect(const QPointF ptStart, const QPointF ptEnd, QString displayText, QFontMetrics fm);
 
 
-
-   signals:
    public slots:
        void setStyle(int);
        void setWidth(int);
        void setColor(QColor);
        void clear();
        void choseimage();
-
    private :
        QPixmap *pix;
+       QPixmap *pic;
        QPoint startpos;
        QPoint endpos;
        bool canDraw;
+       bool k;
        int style;
        int weight;
        QColor color;
        ST::ShapeType drawType;
        QString drawnText;
+       QWidget * widget;
+       QString filename;
+       QImage img;
 
    };
+
    #endif // DRAWWIDGET_H
 

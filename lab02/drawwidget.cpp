@@ -3,6 +3,9 @@
 #include <QPen>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QImage>
+#include <QPixmap>
+
 
 DrawWidget::DrawWidget(QWidget *parent) : QWidget(parent)
 {
@@ -11,15 +14,17 @@ DrawWidget::DrawWidget(QWidget *parent) : QWidget(parent)
     setAutoFillBackground (true);   //设置窗体背景色
     setPalette (QPalette(BACKGROUND_COLOR));
     pix = new QPixmap(size());      //此QPixmap对象用来准备随时接受绘制的内容
-    pix->fill (BACKGROUND_COLOR);          //填充背景色为白色
-    setMinimumSize (600, 400);      //设置绘制区窗体的最小尺寸
-
+    pix->fill (Qt::transparent);          //填充背景色为白色
+    setMinimumSize (600, 400);//设置绘制区窗体的最小尺寸
+    pic = new QPixmap(size());      //此QPixmap对象用来准备随时接受绘制的内容
+    pic->fill (Qt::transparent);
 }
 
 DrawWidget::~DrawWidget()
 {
     // 注意：一定要删除pix指针
     delete pix;
+    delete pic;
 }
 
 void DrawWidget::setStyle (int s)
@@ -82,35 +87,63 @@ void DrawWidget::mouseReleaseEvent(QMouseEvent *e)
         update();
         canDraw = false;
     }
-
-
 }
 void DrawWidget::paintEvent (QPaintEvent *)
 {
     QPainter painter(this);
-    painter.drawPixmap (QPoint(0, 0), *pix);
+    painter.drawPixmap(QPoint(0,0),*pic);
+    painter.drawPixmap(QPoint(0,0),*pix);
 }
 
 
 void DrawWidget::resizeEvent (QResizeEvent *event)
 {
-    if(height () > pix->height () || width() > pix->width ())
-    {
-        QPixmap *newPix = new QPixmap(size());
-        newPix->fill (BACKGROUND_COLOR);
-        QPainter p(newPix);
-        p.drawPixmap (QPoint(0, 0), *pix);
-        delete pix;     //一定要删除原来的对象，否则会出现内存泄漏
-        pix = newPix;
-    }
-    QWidget::resizeEvent(event);
+
+      QPixmap *newPix = new QPixmap(size());
+      QPixmap *newPic = new QPixmap(size());
+      newPic->fill (Qt::transparent);
+      newPix->fill (Qt::transparent);
+      QPainter p(newPix);
+      QPainter pc(newPic);
+      QPixmap pixx;
+      if(height () > pic->height () )//高增加
+      {
+          img=img.scaledToWidth(width(),Qt::FastTransformation);
+          *pic = QPixmap::fromImage(img);
+      }
+         if( width() > pic->width())//宽增加
+      {
+            img=img.scaledToHeight(height(),Qt::FastTransformation);
+           *pic = QPixmap::fromImage(img);
+      }
+      if(height () < pic->height () )//高减小
+      {
+         img=img.scaledToHeight(height(),Qt::FastTransformation);
+          *pic = QPixmap::fromImage(img);
+      }
+         if( width() < pic->width())//宽减小
+      {
+         img=img.scaledToWidth(width(),Qt::FastTransformation);
+        *pic = QPixmap::fromImage(img);
+      }
+      pc.drawPixmap (QPoint((width()-pic->width())/2,(height()-pic->height())/2), *pic);
+      if(width() != pix->width()||height () != pix->height ()){
+      pixx=pix->scaled(size(),Qt::IgnoreAspectRatio,Qt::FastTransformation);
+      }
+      p.drawPixmap (QPoint(0, 0), pixx);
+      delete pic;
+      delete pix; //一定要删除原来的对象，否则会出现内存泄漏
+      pix = newPix;
+      pic = newPic;
+      QWidget::resizeEvent(event);
 }
 
 
 void DrawWidget::clear ()
 {
     // 清除绘图内容，简单的用背景色填充整个画布即可
-    pix->fill(BACKGROUND_COLOR);
+    pix->fill(Qt::transparent);
+    pic->fill(Qt::transparent);
     update ();
 }
 
@@ -263,14 +296,13 @@ void DrawWidget::drawShape(const QPointF ptStart,const QPointF ptEnd,const ST::S
     painter.end ();
 }
 void DrawWidget::choseimage()
-
 {
-    QString filename =QFileDialog::getOpenFileName( this,tr("选择图片文件"), "/home","Images (*.png *.xpm *.jpg)");   //文件只显示.png .xpm .jpg格式
+     filename =QFileDialog::getOpenFileName( this,tr("选择图片文件"), "/home","Images (*.png *.xpm *.jpg)");   //文件只显示.png .xpm .jpg格式
     if(filename.isEmpty())
             return;
     else
     {
-        QImage img;
+        //QImage img;
         if(!(img.load(filename))) //加载图像
         {
             QMessageBox::information(this, tr("打开图像失败"),tr("打开图像失败!"));
@@ -278,14 +310,23 @@ void DrawWidget::choseimage()
         }
     }
 
-    pix->load(filename);
-    QPixmap *newP = new QPixmap(size());
-    newP->fill (BACKGROUND_COLOR);
-    QPainter p(newP);
-    p.drawPixmap (QPoint((width()-pix->width())/2,(height()-pix->width())/2), *pix);
-    delete pix;
-    pix = newP;
-    update();
+     QPixmap *newP = new QPixmap(size());
+     newP->fill(Qt::transparent);
+
+     if(img.width()>width()){  //宽超出画布，缩放
+       img=img.scaledToWidth(width(), Qt::FastTransformation);
+         }
+     if(img.height()>height()){  //高超出画布，缩放
+       img=img.scaledToHeight(height(), Qt::FastTransformation);
+     }
+
+     *pic = QPixmap::fromImage(img);
+     QPainter p(newP);
+     p.drawPixmap(QPoint((width()-pic->width())/2,(height()-pic->height())/2),*pic);
+     delete pic;
+     pic = newP;
+     update();
+
 }
 
 

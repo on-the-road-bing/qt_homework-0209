@@ -145,10 +145,7 @@
      QPointF pt7(p.size().width()/2,p.size().height()-3);
      QVector<QPointF> ptd;
      ptd<<pt4<<pt5<<pt5<<pt6<<pt6<<pt7<<pt7<<pt4;
-     QImage Imaged(":/d");
-     QRect targetRectd(0,0,p.size().width(),p.size().height());
-     QRect sourceRectd = Imaged.rect();
-     painter.drawImage(targetRectd,Imaged,sourceRectd);
+     painter.drawLines(ptd);
      btndiamond->setIcon (QIcon(p));
      connect(btndiamond,&QPushButton::clicked,
              this,&CenterFrame::on_btnDiamondClicked);
@@ -160,8 +157,8 @@
      gridLayout->addWidget(btnTriangle,1,0);
      gridLayout->addWidget(btnLine,1,1);
      gridLayout->addWidget(btnText,2,0);
-     gridLayout->addWidget(ImgBtn,2,1);
-     gridLayout->addWidget(btndiamond,3,0);
+     gridLayout->addWidget(ImgBtn,3,0);
+     gridLayout->addWidget(btndiamond,2,1);
      gridLayout->setMargin(3);
      gridLayout->setSpacing(3);
      group->setLayout(gridLayout);
@@ -185,7 +182,7 @@
      vLayout->addWidget(group);
      vLayout->addWidget(edtText);
      vLayout->addStretch();
-     vLayout->setMargin(5);
+     vLayout->setMargin(7);
 
 
      // 创建绘图区
@@ -348,16 +345,16 @@
  }
  void CenterFrame::on_btnchoseimageClicked()
  {
-      if(ImgBtn ->isChecked())
-          {
-              drawWidget->setShapeType(ST::picture);
+    // if(ImgBtn ->isChecked())
+    //     {
+    //         drawWidget->setShapeType(ST::picture);
               drawWidget->choseimage();
-              updateButtonStatus();
-          }
-          else
-          {
-              drawWidget->setShapeType(ST::None);
-          }
+     //       updateButtonStatus();
+     //   }
+     //   else
+     //   {
+     //       drawWidget->setShapeType(ST::None);
+     //   }
  }
  void CenterFrame::on_btnDiamondClicked(){
      if(btndiamond->isChecked()){
