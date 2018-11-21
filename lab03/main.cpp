@@ -2,6 +2,8 @@
 #include <QApplication>
 #include <QDateTime>
 
+//https://blog.csdn.net/weixin_41712355/article/details/82217607
+
 int main(int argc, char *argv[])
 {
     qSetMessagePattern("%{file}(%{line}): %{message}");             //!< 自定义qDebug的输出pattern

@@ -21,9 +21,12 @@ public:
     explicit dataWorker(QObject *parent = 0);
     explicit dataWorker(QString date, QObject *parent = 0);
     void setRequestDate(QString newDate);
+    void setRequestCity(QString newCity);
     QString requestDate();
+    QString requestCity();
     void doRequest();
 
+    void choose(bool choosetf);        //设置查询气温或AQI
 
 protected:
     QString requestUrl();
@@ -41,13 +44,14 @@ private:
     QString _requestCity;                   //!< 请求城市
     QString _requestDate;                   //!< 请求年月
 
-    QList<QString> dataCity;                //!< 城市
     QList<QDateTime> dataDate;              //!< 日期
     QList<qreal> dataHigh;                  //!< 最高温度
     QList<qreal> dataLow;                   //!< 最低温度
 
     const QString splitter;                 //!< 数据分隔符
     const QString dataPath;                 //!< 数据保存路径
+
+    bool choosetfshow;   //ture:气温，flase：AQI
 
 signals:
     /**

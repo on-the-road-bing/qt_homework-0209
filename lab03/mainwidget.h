@@ -28,11 +28,12 @@ public:
     explicit mainWidget(QWidget *parent = 0);
     ~mainWidget();
 
+
 protected:
     void resetChart(const QString &title);
     void initComboMonth();
     void initComboCity();
-    void addLineSeries(QChart* chart, const QString &seriesName, const QColor color, const int lineWidth=1);      // 向Chart中添加序列（Series）
+    void addLineSeries(QChart* chart, const QString &seriesName, const QColor color, const int lineWidth=1,int ymin=-5, int ymax=40);      // 向Chart中添加序列（Series）
     void connectMarkers();          // 连接序列中所有Legend中Marker的信号与槽
 
 
@@ -46,10 +47,15 @@ private slots:
     void on_cbLegendBold_clicked();
     void on_cbLegendItalic_clicked();
     void on_dataError(QString error);
+    void on_temp_clicked();
+    void on_AQI_clicked();
 
 private:
     Ui::mainWidget *ui;
     dataWorker* worker;
+    QStringList city;   //城市拼音
+    QStringList City;   //城市名称
+    QStringList urlString;
 
 
 };

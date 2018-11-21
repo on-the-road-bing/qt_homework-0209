@@ -86,14 +86,14 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QRadioButton" name="radioButton">
+         <widget class="QRadioButton" name="temp">
           <property name="text">
            <string>查询气温</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="radioButton_2">
+         <widget class="QRadioButton" name="AQI">
           <property name="text">
            <string>查询AQI</string>
           </property>

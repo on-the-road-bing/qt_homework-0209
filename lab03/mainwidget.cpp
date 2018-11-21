@@ -17,6 +17,7 @@ mainWidget::mainWidget(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->chartview->setRenderHint(QPainter::Antialiasing);
+    ui->temp->setChecked(true);
 
     initComboMonth();
     initComboCity();
@@ -28,6 +29,8 @@ mainWidget::mainWidget(QWidget *parent) :
     connect(worker,&dataWorker::dataParseFinished,this,&mainWidget::updateDataChart);
     connect(worker,&dataWorker::dataParseError,this,&mainWidget::on_dataError);
     connect(worker,&dataWorker::httpRequestError,this,&mainWidget::on_dataError);
+
+    urlString<<"https://lishi.tianqi.com/"<<"http://www.tianqihoubao.com/lishi/";
 
 }
 
@@ -61,10 +64,12 @@ void mainWidget::initComboMonth()
 
 void mainWidget::initComboCity()  //增加选择城市下拉框
 {
-    QStringList City;
     City<<QString("南京")<<QString("北京")<<QString("上海")<<QString("杭州")<<QString("哈尔滨");
+    city<<QString("nanjing")<<QString("beijing")<<QString("shanghai")<<QString("hangzhou")<<QString("haerbin");
     ui->comboCity->clear();
-    ui->comboCity->addItems(City);
+    for(int i=0;i<5;i++){
+        ui->comboCity->addItem(City.at(i),city.at(i));
+    }
 }
 
 /**
@@ -114,7 +119,7 @@ void mainWidget::resetChart(const QString &title)
  * @param color 序列颜色
  * @param lineWidth 序列线宽（默认值为1）
  */
-void mainWidget::addLineSeries(QChart *chart, const QString &seriesName, const QColor color, const int lineWidth)
+void mainWidget::addLineSeries(QChart *chart, const QString &seriesName, const QColor color, const int lineWidth,const int ymin ,const int ymax )
 {
 
     // 新建一个序列
@@ -145,9 +150,14 @@ void mainWidget::addLineSeries(QChart *chart, const QString &seriesName, const Q
         mAxisX->setRange(QDateTime::currentDateTime().addMonths(-1),QDateTime::currentDateTime());
 
         QValueAxis *mAxisY = new QValueAxis;
-        mAxisY->setRange(-5,40);
+        mAxisY->setRange(ymin,ymax);
         mAxisY->setLabelFormat("%g");
-        mAxisY->setTitleText("摄氏度(°C)");
+        if(ui->temp->isChecked()){
+            mAxisY->setTitleText("摄氏度(°C)");
+        }
+        else if(ui->AQI->isChecked()){
+            mAxisY->setTitleText("污染物浓度μg/m³");
+        }
 
         chart->setAxisX(mAxisX,series);
         chart->setAxisY(mAxisY,series);
@@ -258,14 +268,29 @@ void mainWidget::on_btnStart_clicked()
     QString chartTitle = "";
     if(ui->comboMonth->count()>0){
         chartTitle = ui->comboMonth->currentText().replace("-","年");
-        chartTitle.append("月 南京气温");
-    }else{
-        chartTitle="南京气温";
+        if(ui->temp->isChecked())
+        {
+            chartTitle.append(QString("月 %1气温").arg(ui->comboCity->currentText()));
+        }
+        else if(ui->AQI->isChecked())
+        {
+             chartTitle.append(QString("月 %1空气质量").arg(ui->comboCity->currentText()));
+        }
     }
+
     resetChart(chartTitle);
 
-    // 设置dataWorker对象的请求年月
-    worker->setRequestDate(ui->comboMonth->currentText());
+
+    //更新连接地址
+    QString requestDate=ui->comboMonth->currentText().remove("-");
+    QString requestCity=ui->comboCity->itemData(City.indexOf(ui->comboCity->currentText())).toString();
+
+    urlString[0]=QString("https://lishi.tianqi.com/%1/%2.html").arg(requestCity).arg(requestDate);
+    urlString[1]=QString("http://www.tianqihoubao.com/aqi/%1-%2.html").arg(requestCity).arg(requestDate);
+
+    // 设置dataWorker对象的请求年月和请求的城市
+    worker->setRequestDate(requestDate);     //传当前年月
+    worker->setRequestCity(requestCity);  //传当前城市的拼音
 
     // 发起HTTP请求
     worker->doRequest();
@@ -286,33 +311,57 @@ void mainWidget::updateDataChart(QList<QDateTime> date, QList<qreal> tempHigh, Q
 {
     QChart* chart = ui->chartview->chart();
 
+    QLineSeries* seriesHigh;
+    QLineSeries* seriesLow;
+    qreal ymin;
+    qreal ymax;
+    for(int i=0;i<tempHigh.size();i++){
+    ymin=(ymin > tempLow.at(i)) ? tempLow.at(i):ymin;
+    ymax=(ymax < tempHigh.at(i)) ? tempHigh.at(i):ymax;
+    }
+
+    if(ui->temp->isChecked()){
     // 添加第一条数据曲线
-    addLineSeries(chart,"日最高温度",Qt::red,2);
-    QLineSeries* seriesHigh = qobject_cast<QLineSeries*> (chart->series().last());
+    addLineSeries(chart,"日最高温度",Qt::red,2,ymin-5,ymax+5);
+    seriesHigh = qobject_cast<QLineSeries*> (chart->series().last()); //转换
     seriesHigh->setPointsVisible(ui->cbShowPoint->isChecked());
 
     // 添加第二条数据曲线
-    addLineSeries(chart,"日最低温度",Qt::blue,2);
-    QLineSeries* seriesLow = qobject_cast<QLineSeries*> (chart->series().last());
+    addLineSeries(chart,"日最低温度",Qt::blue,2,ymin-5,ymax+5);
+    seriesLow = qobject_cast<QLineSeries*> (chart->series().last());
     seriesLow->setPointsVisible(ui->cbShowPoint->isChecked());
+    }
+    else if(ui->AQI->isChecked()){
+        // 添加第一条数据曲线
+        addLineSeries(chart,"AQI",Qt::red,2,ymin-5,ymax+5);
+        seriesHigh = qobject_cast<QLineSeries*> (chart->series().last());
+        seriesHigh->setPointsVisible(ui->cbShowPoint->isChecked());
 
-    // 向每条曲线中添加数据
+        // 添加第二条数据曲线
+        addLineSeries(chart,"PM2.5",Qt::blue,2,ymin-5,ymax+5);
+        seriesLow = qobject_cast<QLineSeries*> (chart->series().last());
+        seriesLow->setPointsVisible(ui->cbShowPoint->isChecked());
+    }
+
+        // 向每条曲线中添加数据
     for (int i=0; i<date.count();i++){
         seriesHigh->append(date.at(i).toMSecsSinceEpoch(),tempHigh.at(i));
         seriesLow->append(date.at(i).toMSecsSinceEpoch(),tempLow.at(i));
     }
+
 
     // 设置坐标轴
     QDateTimeAxis *mAxisX = qobject_cast<QDateTimeAxis*>(chart->axisX());
     mAxisX->setRange(date.first(),date.last());
 
     connectMarkers();
+
     // 显示图注
     chart->legend()->show();
     // 更新图表
     chart->update();
 
-    // 使能两个按钮
+    // 使能三个按钮
     ui->comboCity->setEnabled(true);
     ui->comboMonth->setEnabled(true);
     ui->btnStart->setEnabled(true);
@@ -416,8 +465,18 @@ void mainWidget::on_cbLegendItalic_clicked()
 void mainWidget::on_dataError(QString error)
 {
     qDebug()<<error;
-    // 使能两个按钮
+    // 使能三个按钮
     ui->comboCity->setEnabled(true);
     ui->comboMonth->setEnabled(true);
     ui->btnStart->setEnabled(true);
 }
+void mainWidget::on_temp_clicked()
+{
+    worker->choose(true);
+}
+
+void mainWidget::on_AQI_clicked()
+{
+    worker->choose(false);
+}
+
